@@ -1,0 +1,93 @@
+<ion-view title="{{data.local.str.step3}}">
+	<ion-content class="padding-top">
+		<ng-form name="ap.form" novalidate>
+			<ion-list>
+				<ion-item class="item-input">
+					<label class="input-label" ng-bind="data.local.str.ssidInput"></label>
+					<input ng-model="data.local.ssid" name="ssid" type="text" maxlength="32" placeholder="{{data.local.str.ssidInput}}" required check-wireless-ssid></input>
+				</ion-item>
+				<div ng-messages="ap.form.ssid.$error" ng-show="ap.form.ssid.$dirty">
+					<div ng-message="required">
+						<span class="item-alert" ng-bind="data.local.str.required"></span>
+					</div>
+					<div ng-message="maxlength">
+						<span class="item-alert" ng-bind="data.local.str.ssidLength"></span>
+					</div>
+					<div ng-message="checkWirelessSsid">
+						<span class="item-alert" ng-bind="data.local.str.invalidSsid"></span>
+					</div>
+				</div>
+				<ion-item class="item-select">
+					<label class="item-label" ng-bind="data.local.str.wirelessModeInput"></label>
+					<select ng-change="action.changeModeOrChannel()" ng-model="data.local.wirelessMode" ng-options="wirelessMode.name for wirelessMode in data.local.wirelessModes"></select>
+				</ion-item>
+				<ion-item ng-if="false" class="card">
+					<span style="margin: 10px -10px;" class="item-label show" ng-bind="data.local.str.spectrumAnalysis"></span>
+					<canvas style="width: 360px;" class="chart chart-line" chart-data="data.local.spectrum.data" chart-labels="data.local.spectrum.labels" chart-series="data.local.spectrum.series" chart-options="data.local.spectrum.options" chart-dataset-override="data.local.spectrum.datasetOverride">
+					</canvas>
+				</ion-item>
+				<ion-item ng-if="false" class="card nowrap">
+					<ion-item class="no-border-bottom">
+						<span ng-bind="data.local.str.spectrumAnalysis"></span>
+						<span class="item-note" ng-bind="data.local.str.scrollTip"></span>
+					</ion-item>
+					<ion-item class="no-border-top no-border-bottom">
+						<span class="c666" ng-bind="data.local.str.dbm"></span>
+						<span ng-bind="data.local.str.peak" class="badge badge-peak"></span>
+						<span ng-bind="data.local.str.average" class="badge badge-average"></span>
+						<span ng-bind="data.local.str.current" class="badge badge-current"></span>
+					</ion-item>
+					<ion-scroll direction="x" scrollbar-x="false" paging="true" overflow="scroll" style="width: 100%;">
+						<canvas width="640" class="chart chart-line" chart-data="data.local.spectrum.data" chart-labels="data.local.spectrum.labels" chart-series="data.local.spectrum.series" chart-options="data.local.spectrum.options" chart-dataset-override="data.local.spectrum.datasetOverride">
+						</canvas>
+					</ion-scroll>
+				</ion-item>
+				<ion-item class="item-select">
+					<label class="item-label" ng-bind="data.local.str.channelInput"></label>
+					<select ng-change="action.changeModeOrChannel()" ng-model="data.local.channel" ng-options="channel.name for channel in data.local.channels"></select>
+				</ion-item>
+				<ion-item class="item-select">
+					<label class="item-label" ng-bind="data.local.str.bandwidthInput"></label>
+					<select ng-change="action.changeBandwidth()" ng-model="data.local.bandwidth" ng-options="bandwidth.name for bandwidth in data.local.bandwidths"></select>
+				</ion-item>
+				<ion-item class="item-select">
+					<label class="item-label" ng-bind="data.local.str.encryptionInput"></label>
+					<select ng-model="data.local.encryption" ng-options="encryption.name for encryption in data.local.encryptions"></select>
+				</ion-item>
+				<ion-item ng-if="data.local.encryption.value == 1" class="item-input item-icon-right">
+					<label class="input-label" ng-bind="data.local.str.keyInput"></label>
+					<input ng-model="data.local.key" minlength="8" maxlength="63" name="key" type="{{data.local.inputType}}" placeholder="{{data.local.str.keyInput}}" required check-wireless-key></input>
+					<i ng-if="data.local.key.length > 0" ng-click="action.showPassword()" class="icon ion-eye {{data.local.eyecls}}"></i>
+				</ion-item>
+				<div ng-messages="ap.form.key.$error" ng-show="ap.form.key.$dirty">
+					<div ng-message="required">
+						<span class="item-alert" ng-bind="data.local.str.required"></span>
+					</div>
+					<div ng-message="minlength, maxlength">
+						<span class="item-alert" ng-bind="data.local.str.keyLength"></span>
+					</div>
+					<div ng-message="checkWirelessKey">
+						<span class="item-alert" ng-bind="data.local.str.invalidKey"></span>
+					</div>
+				</div>
+				<ion-item class="item-input">
+					<label class="input-label" ng-bind="data.local.str.distanceInput"></label>
+					<input ng-model="data.local.distance" name="distance" type="number" min="0" max="24" placeholder="{{data.local.str.distancePlaceholder}}" required></input>
+					<label class="input-label">km</label>
+				</ion-item>
+				<div ng-messages="ap.form.distance.$error" ng-show="ap.form.distance.$dirty">
+					<div ng-message="required">
+						<span class="item-alert" ng-bind="data.local.str.required"></span>
+					</div>
+					<div ng-message="min, max">
+						<span class="item-alert" ng-bind="data.local.str.distanceExceed"></span>
+					</div>
+					<div ng-message="number">
+						<span class="item-alert" ng-bind="data.local.str.distanceExceed"></span>
+					</div>
+				</div>
+			</ion-list>
+		</ng-form>
+		<button ng-disabled="ap.form.$invalid" ng-click="action.goToNext()" class="button button-wx button-positive" ng-bind="data.local.str.nextStep"></button>
+	</ion-content>
+</ion-view>

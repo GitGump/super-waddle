@@ -1,0 +1,231 @@
+.hide-popup-title .popup-head {
+	display: none;
+}
+
+.fl {
+  float: right;
+}
+
+.fr {
+  float: right;
+}
+
+.fz16 {
+  font-size: 16px;
+}
+
+.fz24 {
+  font-size: 24px;
+}
+
+.mt10 {
+  margin-top: 10px;
+}
+
+.mt20 {
+  margin-top: 20px;
+}
+
+.mb10 {
+  margin-bottom: 10px;
+}
+
+.mb20 {
+  margin-bottom: 20px;
+}
+
+.item .mb-15 {
+  margin-bottom: -15px;
+}
+
+.item .mt-5 {
+  margin-top: -5px;
+}
+
+.item-icon-left .icon, .item-icon-right .icon {
+  font-size: 24px;
+}
+
+.item-icon-left .small, .item-icon-right .small {
+  font-size: 16px;
+}
+
+.item-icon-right .r65 {
+  right: 65px;
+}
+
+.item-icon-right .r40 {
+  right: 40px;
+}
+
+.item-icon-right .mr-30 {
+  margin-right: -30px;
+}
+
+.item-radio .radio-icon {
+  color: #1499ff;
+}
+
+.button.button-wx {
+  display: block;
+  width: 94%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 3%;
+  margin-left: 3%;
+  border-radius: 5px;
+}
+
+.button.button-text-small {
+  font-size: 16px;
+}
+
+.button.button-right-0 {
+  right: 0;
+}
+
+.button.mt3 {
+  margin-top: 3px;
+}
+
+.card.nowrap {
+  margin: 0;
+  border-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.no-border-top {
+  border-top: 0;
+}
+
+.no-border-bottom {
+  border-bottom: 0;
+}
+
+.c666 {
+  color: #666;
+}
+
+.c999 {
+  color: #999;
+}
+
+.tac {
+  text-align: center;
+}
+
+.tal {
+  text-align: left;
+}
+
+.tar {
+  text-align: right;
+}
+
+/**
+  * Item messages
+  * --------------------------------------------------
+  */
+
+.item-message {
+  display: block;
+  padding: 4px 16px 16px 16px;
+  color: #387ef5;
+}
+
+.item-success {
+  display: block;
+  padding: 4px 16px 16px 16px;
+  color: #51a351;
+}
+
+.item-info {
+  display: block;
+  padding: 4px 16px 16px 16px;
+  color: #666;
+}
+
+.item-warning {
+  display: block;
+  padding: 4px 16px 16px 16px;
+  color: #f89406;
+}
+
+.item-alert {
+  display: block;
+  padding: 4px 16px 16px 16px;
+  color: #ef473a;
+}
+
+.popup-container .popup {
+	border-radius: 10px;
+}
+
+/* fix scroll issue */
+.overflow-scroll {
+  overflow-y: auto;
+}
+
+.badge.badge-peak {
+  display: block;
+  width: 60px;
+  right: 132px;
+  border: 1px solid transparent;
+  background: #ff645d;
+  color: #fff;
+}
+
+.badge.badge-average {
+  width: 60px;
+  right: 64px;
+  border: 1px solid transparent;
+  background: #a049cc;
+  color: #fff;
+}
+
+.badge.badge-current {
+  width: 60px;
+  right: 0;
+  border: 1px solid transparent;
+  background: #5165ff;
+  color: #fff;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  margin-top: -5px;
+  stroke: #1499ff;
+}
+
+.item-height {
+  height: 49px;
+}
+
+.terms-of-services {
+  position: relative;
+  z-index: 4;
+  margin-top: -40px;
+  margin-left: 55px;
+}
+
+.quick-set-btn {
+  position: absolute;
+  bottom: 80px;
+}
+
+.pc-web-btn {
+  position: absolute;
+  bottom: 20px;
+}
+
+.success-tip {
+  position: absolute;
+  bottom: 0;
+  width: 80%;
+  margin-left: 10%;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #999;
+}
