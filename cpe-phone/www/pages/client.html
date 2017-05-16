@@ -11,10 +11,10 @@
 					<h2 ng-class="{true: '', false: 'mt-5'}[device.device_name == '']" ng-bind="device.ssid"></h2>
 					<p ng-if="device.device_name != ''" class="mb-15" ng-bind="device.deviceName"></p>
 					<i ng-if="device.isEncrypted" class="icon ion-locked small positive r65"></i>
-					<i ng-if="true" class="icon ion-wifi small positive r40"></i>
-					<img ng-if="false && device.snr >= 30" src="/img/wifi3.png" style="height: 24px; width: 24px; float: right; margin-top: -22px; margin-right: -40px;"></img>
-					<img ng-if="false && device.snr < 30 && device.snr >= 15" src="/img/wifi2.png" style="height: 24px; width: 24px; float: right; margin-top: -22px; margin-right: -40px;"></img>
-					<img ng-if="false && device.snr < 15" src="/img/wifi1.png" style="height: 24px; width: 24px; float: right; margin-top: -22px; margin-right: -40px;"></img>
+					<i ng-if="false" class="icon ion-wifi small positive r40"></i>
+					<img ng-if="device.snr >= 30" src="/img/wifi3.png" style="height: 24px; width: 24px; float: right; margin-top: -22px; margin-right: -40px;"></img>
+					<img ng-if="device.snr < 30 && device.snr >= 15" src="/img/wifi2.png" style="height: 24px; width: 24px; float: right; margin-top: -22px; margin-right: -40px;"></img>
+					<img ng-if="device.snr < 15" src="/img/wifi1.png" style="height: 24px; width: 24px; float: right; margin-top: -22px; margin-right: -40px;"></img>
 					<button ng-click="action.showDeviceDetail(device); $event.stopPropagation();" class="button button-positive button-clear button-text-small button-right-0 mt3">{{device.deviceDetailEntry}}</button>
 				</ion-item>
 				<ion-item ng-if="!device.isPackup" class="item-body">
@@ -98,7 +98,7 @@
 						<span class="item-alert" ng-bind="data.local.str.distanceExceed"></span>
 					</div>
 				</div>
-				<button ng-disabled="client.form.$invalid" ng-click="action.inputConnect()" class="button button-wx button-positive" ng-bind="data.local.str.nextStep"></button>
+				<button ng-disabled="client.form.$invalid" ng-click="action.inputConnect()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.nextStep"></button>
 			</ion-list>
 		</ng-form>
 	</ion-content>

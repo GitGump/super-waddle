@@ -1,5 +1,5 @@
 .hide-popup-title .popup-head {
-	display: none;
+  display: none;
 }
 
 .fl {
@@ -159,7 +159,7 @@
 }
 
 .popup-container .popup {
-	border-radius: 10px;
+  border-radius: 10px;
 }
 
 /* fix scroll issue */
@@ -210,22 +210,16 @@
   margin-left: 55px;
 }
 
-.quick-set-btn {
-  position: absolute;
-  bottom: 80px;
-}
-
-.pc-web-btn {
-  position: absolute;
-  bottom: 20px;
+.next-step-btn {
+  position: relative;
+  top: 20px;
 }
 
 .success-tip {
-  position: absolute;
-  bottom: 0;
+  position: relative;
+  margin-top: 20px;
   width: 80%;
   margin-left: 10%;
-  margin-bottom: 20px;
   text-align: center;
   color: #999;
 }

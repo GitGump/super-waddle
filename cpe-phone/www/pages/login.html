@@ -42,7 +42,7 @@
 				<ion-label class="terms-of-services">{{data.local.str.agree}}<span class="calm" ng-click="!cpeService.serviceValue.isLocked && action.showTerms()">{{data.local.str.termsTitle}}</span></ion-label>
 			</ion-list>
 		</ng-form>
-		<button ng-if="cpeService.serviceValue.isFactory" ng-disabled="login.form.$invalid || !data.local.isTermsAgreed" ng-click="action.signUp()" class="button button-wx button-positive" ng-bind="data.local.str.confirm"></button>
-		<button ng-if="!cpeService.serviceValue.isFactory" ng-disabled="login.form.$invalid || !data.local.isTermsAgreed || cpeService.serviceValue.isLocked" ng-click="action.signIn()" class="button button-wx button-positive" ng-bind="data.local.str.signIn"></button>
+		<button ng-if="cpeService.serviceValue.isFactory" ng-disabled="login.form.$invalid || !data.local.isTermsAgreed" ng-click="action.signUp()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.confirm"></button>
+		<button ng-if="!cpeService.serviceValue.isFactory" ng-disabled="login.form.$invalid || !data.local.isTermsAgreed || cpeService.serviceValue.isLocked" ng-click="action.signIn()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.signIn"></button>
 	</ion-content>
 </ion-view>

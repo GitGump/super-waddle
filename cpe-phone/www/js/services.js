@@ -185,7 +185,12 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
       OTHER_ERROR: -40407,
       SYSTEM_LOCKED: -40408
     },
-    ATTTEMPT_LOGIN_TIMES_MAX: 10
+    ATTEMPT_LOGIN_TIMES_MAX: 10,
+    PC_SITE: '/web-static/index.html',
+    DEBUG_MODE: true,
+    SERVER_PROTOCOL: 'http:',
+    SERVER_IP: '192.168.1.254',
+    SERVER_DNS: 'tplogin.cn'
   })
 
   .value('serviceValue', {
@@ -194,9 +199,7 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
     isLogin: false,
     isSessionTimeout: false,
     isLocked: false,
-    serverProtocol: 'http:',
-    serverIp: '192.168.1.254',
-    serverDns: 'tplogin.cn',
+    is2G: undefined,
     slpUrl: '',
     deviceName: '',
     devicePlatform: undefined,
@@ -518,60 +521,8 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
     }
   ])
 
-  .factory('dataService', ['httpService', 'authInfoService', 'serviceValue', 'serviceConstant',
-    function(httpService, authInfoService, serviceValue, serviceConstant) {
-
-      var request = function(opts) {
-        var stok = authInfoService.getStok('stok');
-        var href = serviceValue.serverProtocol + '//' + serviceValue.serverIp;
-
-        if (opts.url) {
-          var url = opts.url;
-        } else {
-          if (!stok) {
-            url = href;
-          } else {
-            url = href + '/stok=' + stok + '/ds';
-          }
-        }
-
-        var config = {
-          method: 'POST',
-          timeout: 20 * 1000,
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        };
-
-        if (opts.timeout && angular.isNumber(opts.timeout)) {
-          config.timeout = opts.timeout;
-        }
-
-        httpService.post(url, opts.data, config, opts.success, opts.failure);
-      }
-
-      var showErrMsg = function(response) {
-        if (!response) {
-          cpeService.promptService.toast.error(cpeService.serviceConstant.STR.COMMON.ALERT.UNKNOWNERR);
-        } else  if (response && response.error_code != 0) {
-          var errorCode = response.error_code.toString().slice(1);
-          var errorMsg = cpeService.serviceConstant.STR.COMMON.ERRORCODE['e' + errorCode];
-          if (!errorMsg) {
-            errorMsg = cpeService.serviceConstant.STR.COMMON.ERRORCODE.DEFAULT;
-          }
-          cpeService.promptService.toast.error(errorMsg);
-        }
-      }
-
-      return {
-        request: request,
-        showErrMsg: showErrMsg
-      }
-    }
-  ])
-
-  .factory('authService', ['dataService', 'authInfoService', 'serviceConstant', 'serviceValue',
-    function(dataService, authInfoService, serviceConstant, serviceValue) {
+  .factory('authService', ['authInfoService', 'serviceConstant', 'serviceValue',
+    function(authInfoService, serviceConstant, serviceValue) {
 
       var securityEncode = function(input1, input2, input3) {
         var dictionary = input3;
@@ -612,9 +563,91 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
         return securityEncode(pwd, strDe, dic);
       }
 
+      var setSlpUrl = function(stok) {
+        if (serviceConstant.DEBUG_MODE) {
+          // Develop mode
+          if (!stok) {
+            serviceValue.slpUrl = serviceConstant.SERVER_PROTOCOL + '//' + serviceConstant.SERVER_IP;
+          } else {
+            serviceValue.slpUrl = serviceConstant.SERVER_PROTOCOL + '//' + serviceConstant.SERVER_IP + '/stok=' + stok + '/ds';
+          }
+        } else {
+          // Apply mode
+          if (!stok) {
+            serviceValue.slpUrl = '/';
+          } else {
+            serviceValue.slpUrl = '/stok=' + stok + '/ds';
+          }
+        }
+      }
+
+      var getSlpUrl = function() {
+        return serviceValue.slpUrl;
+      }
+
+      var getUrl = function() {
+        var url;
+        if (serviceConstant.DEBUG_MODE) {
+          // Develop mode
+          url = serviceConstant.SERVER_PROTOCOL + '//' + serviceConstant.SERVER_IP;
+        } else {
+          // Apply mode
+          url = '/';
+        }
+        return url;
+      }
+
+      return {
+        orgAuthPwd: orgAuthPwd,
+        setSlpUrl: setSlpUrl,
+        getSlpUrl: getSlpUrl,
+        getUrl: getUrl
+      }
+    }
+  ])
+
+  .factory('dataService', ['httpService', 'authService', 'serviceValue', 'serviceConstant',
+    function(httpService, authService, serviceValue, serviceConstant) {
+
+      var request = function(opts) {
+        var url;
+        if (opts.url) {
+          url = opts.url;
+        } else {
+          url = authService.getSlpUrl();
+        }
+
+        var config = {
+          method: 'POST',
+          timeout: 20 * 1000,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        };
+
+        if (opts.timeout && angular.isNumber(opts.timeout)) {
+          config.timeout = opts.timeout;
+        }
+
+        httpService.post(url, opts.data, config, opts.success, opts.failure);
+      }
+
+      var showErrMsg = function(response) {
+        if (!response) {
+          cpeService.promptService.toast.error(cpeService.serviceConstant.STR.COMMON.ALERT.UNKNOWNERR);
+        } else  if (response && response.error_code != 0) {
+          var errorCode = response.error_code.toString().slice(1);
+          var errorMsg = cpeService.serviceConstant.STR.COMMON.ERRORCODE['e' + errorCode];
+          if (!errorMsg) {
+            errorMsg = cpeService.serviceConstant.STR.COMMON.ERRORCODE.DEFAULT;
+          }
+          cpeService.promptService.toast.error(errorMsg);
+        }
+      }
+
       var getDeviceStatus = function() {
-        dataService.request({
-          url: getUrl(),
+        request({
+          url: authService.getUrl(),
           data: {
             method: 'get',
             network: {
@@ -661,29 +694,11 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
         }
       }
 
-      var setSlpUrl = function(stok) {
-        if (!stok) {
-          serviceValue.slpUrl = serviceValue.serverProtocol + '//' + serviceValue.serverIp;
-        } else {
-          serviceValue.slpUrl = serviceValue.serverProtocol + '//' + serviceValue.serverIp + '/stok=' + stok + '/ds';
-        }
-      }
-
-      var getSlpUrl = function() {
-        return serviceValue.slpUrl;
-      }
-
-      var getUrl = function() {
-        return serviceValue.serverProtocol + '//' + serviceValue.serverIp;
-      }
-
       return {
-        orgAuthPwd: orgAuthPwd,
+        request: request,
+        showErrMsg: showErrMsg,
         getDeviceStatus: getDeviceStatus,
-        getDeviceStatusCallback: getDeviceStatusCallback,
-        setSlpUrl: setSlpUrl,
-        getSlpUrl: getSlpUrl,
-        getUrl: getUrl
+        getDeviceStatusCallback: getDeviceStatusCallback
       }
     }
   ])
@@ -857,6 +872,9 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
             case '165':
               channelIndex = 22;
               break;
+            default:
+              channelIndex = 0;
+              break;
           }
 
           return channelIndex;
@@ -895,16 +913,16 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
     }
   ])
 
-  .factory('cpeService', ['$rootScope', '$window', 'serviceConstant', 'serviceValue', 'checkService', 'promptService', 'httpService', 'dataService', 'authService', 'localDataService', 'authInfoService', 'transformService',
-    function($rootScope, $window, serviceConstant, serviceValue, checkService, promptService, httpService, dataService, authService, localDataService, authInfoService, transformService) {
+  .factory('cpeService', ['$rootScope', '$window', 'serviceConstant', 'serviceValue', 'checkService', 'promptService', 'httpService', 'authService', 'dataService', 'localDataService', 'authInfoService', 'transformService',
+    function($rootScope, $window, serviceConstant, serviceValue, checkService, promptService, httpService, authService, dataService, localDataService, authInfoService, transformService) {
       var services = {
         serviceConstant: serviceConstant,
         serviceValue: serviceValue,
         checkService: checkService,
         promptService: promptService,
         httpService: httpService,
-        dataService: dataService,
         authService: authService,
+        dataService: dataService,
         localDataService: localDataService,
         authInfoService: authInfoService,
         transformService: transformService

@@ -80,7 +80,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 		}
 
 		if (!cpeService.serviceValue.isLogin) {
-			cpeService.authService.getDeviceStatus();
+			cpeService.dataService.getDeviceStatus();
 		}
 
 		function getModData(callback) {
@@ -107,7 +107,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					}
 					var mode = response.opmode.op.old_mode;
 					var lan = response.network.lan;
-					cpeService.serviceValue.serverIp = lan.ipaddr;
 					var wlan_host_5g = response.wireless.wlan_host_5g;
 					var wlan_wds_5g = response.wireless.wlan_wds_5g;
 					cpeService.serviceValue.global.server = {
@@ -117,26 +116,39 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 						client: wlan_wds_5g
 					};
 					var module_spec = response.function.module_spec;
-					// Get wireless 5g mode from module spec
-					var wireless5GMode = decodeURIComponent(module_spec.wireless5g_mode).split(',');
-					for (var i = 0; i < wireless5GMode.length; i++) {
-						wireless5GMode[i] = wireless5GMode[i].replace(/^\s*/, '');
-						var index = cpeService.transformService.getWirelessModeIndex(wireless5GMode[i]);
-						cpeService.serviceValue.wireless5GModes.push(cpeService.serviceConstant.wirelessModes[index]);
+					var wirelessBand = module_spec.wireless_band;
+					if (wirelessBand.split(',').length === 2) {
+						// Support 2.4G and 5G
+						cpeService.serviceValue.is2G = 2;
+					} else {
+						if (wirelessBand == '2g') {
+							cpeService.serviceValue.is2G = 1;
+						} else if (wirelessBand == '5g') {
+							cpeService.serviceValue.is2G = 0;
+						}
 					}
-					// Get wireless 5g channel from module spec
-					var wireless5GChannel = decodeURIComponent(module_spec.wireless5g_channel).split(',');
-					for (var i = 0; i < wireless5GChannel.length; i++) {
-						wireless5GChannel[i] = wireless5GChannel[i].replace(/^\s*/, '');
-						var index = cpeService.transformService.getWirelessChannelIndex(wireless5GChannel[i]);
-						cpeService.serviceValue.wireless5GChannels.push(cpeService.serviceConstant.channels[index]);
-					}
-					// Get wireless 5g bandwidth from module spec
-					var wireless5GBandwidth = decodeURIComponent(module_spec.wireless5g_bandwidth).split(',');
-					for (var i = 0; i< wireless5GBandwidth.length; i++) {
-						wireless5GBandwidth[i] = wireless5GBandwidth[i].replace(/^\s*/, '');
-						var index = cpeService.transformService.getWirelessBandwidthIndex(wireless5GBandwidth[i]);
-						cpeService.serviceValue.wireless5GBandwidths.push(cpeService.serviceConstant.bandwidths[index]);
+					if (cpeService.serviceValue.is2G === 0) {
+						// Get wireless 5g mode from module spec
+						var wireless5GMode = decodeURIComponent(module_spec.wireless5g_mode).split(',');
+						for (var i = 0; i < wireless5GMode.length; i++) {
+							wireless5GMode[i] = wireless5GMode[i].replace(/^\s*/, '');
+							var index = cpeService.transformService.getWirelessModeIndex(wireless5GMode[i]);
+							cpeService.serviceValue.wireless5GModes.push(cpeService.serviceConstant.wirelessModes[index]);
+						}
+						// Get wireless 5g channel from module spec
+						var wireless5GChannel = decodeURIComponent(module_spec.wireless5g_channel).split(',');
+						for (var i = 0; i < wireless5GChannel.length; i++) {
+							wireless5GChannel[i] = wireless5GChannel[i].replace(/^\s*/, '');
+							var index = cpeService.transformService.getWirelessChannelIndex(wireless5GChannel[i]);
+							cpeService.serviceValue.wireless5GChannels.push(cpeService.serviceConstant.channels[index]);
+						}
+						// Get wireless 5g bandwidth from module spec
+						var wireless5GBandwidth = decodeURIComponent(module_spec.wireless5g_bandwidth).split(',');
+						for (var i = 0; i< wireless5GBandwidth.length; i++) {
+							wireless5GBandwidth[i] = wireless5GBandwidth[i].replace(/^\s*/, '');
+							var index = cpeService.transformService.getWirelessBandwidthIndex(wireless5GBandwidth[i]);
+							cpeService.serviceValue.wireless5GBandwidths.push(cpeService.serviceConstant.bandwidths[index]);
+						}
 					}
 					if (typeof callback == 'function') {
 						callback();
@@ -342,7 +354,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					step3: '第三步，AP 设置',
 					ssidInput: 'SSID',
 					wirelessModeInput: '无线模式',
-					encryptionInput: '加密算法',
+					encryptionInput: '加密方式',
 					keyInput: '输入密钥',
 					spectrumAnalysis: '频谱分析',
 					scrollTip: '向右滑动查看完整频谱分析>',
@@ -596,13 +608,13 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 
 				var wlan_host_5g = {
 					enable: '1',
-					ssid: $scope.data.local.ssid,
+					ssid: encodeURIComponent($scope.data.local.ssid),
 					mode: $scope.data.local.wirelessMode.value,
 					encryption: $scope.data.local.encryption.value,
 					key: $scope.data.local.key,
 					channel: $scope.data.local.channel.value,
 					bandwidth: $scope.data.local.bandwidth.value,
-					ack_number: $scope.data.local.distance
+					ack_number: $scope.data.local.distance.toString()
 				}
 
 				var requestData = {
@@ -751,7 +763,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 		}
 
 		getScanList();
-		$scope.data.local.encryption = $scope.data.local.encryptions[0];
+		$scope.data.local.input.encryption = $scope.data.local.encryptions[0];
 
 		$scope.action = {
 			refreshScanList: function() {
@@ -795,7 +807,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					if (device.isEncrypted) {
 						wlan_wds_5g.key = $scope.data.local.scan.key;
 					}
-					wlan_wds_5g.ack_number = $scope.data.local.scan.distance;
+					wlan_wds_5g.ack_number = $scope.data.local.scan.distance.toString();
 					cpeService.serviceValue.global.local.client = wlan_wds_5g;
 					var requestData = {
 						method: 'set',
@@ -831,7 +843,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					ssid: encodeURIComponent($scope.data.local.input.ssid),
 					encryption: $scope.data.local.input.encryption.value,
 					key: $scope.data.local.input.key,
-					ack_number: $scope.data.local.input.distance
+					ack_number: $scope.data.local.input.distance.toString()
 				};
 				cpeService.serviceValue.global.local.client = wlan_wds_5g;
 				var requestData = {
@@ -882,7 +894,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					wirelessMode: '无线模式',
 					bandwidth: '信道带宽',
 					channel: '信道/频率',
-					encryption: '加密算法',
+					encryption: '加密方式',
 					distance: '距离设置',
 					ssidOfAp: '远程 AP SSID',
 					key: '无线密码',
@@ -902,18 +914,19 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					// AP mode
 					$scope.data.local.isAp = true;
 					$scope.data.local.status = $scope.data.local.str.success;
-					$scope.data.local.ssid = data.ap.ssid;
+					$scope.data.local.ssid = decodeURIComponent(data.ap.ssid);
 					$scope.data.local.wirelessMode = data.ap.wirelessMode.name;
 					$scope.data.local.channel = data.ap.channel.name;
 					$scope.data.local.bandwidth = data.ap.bandwidth.name;
 					$scope.data.local.encryption = data.ap.encryption.name;
+					$scope.data.local.key = data.ap.key;
 					$scope.data.local.distance = data.ap.distance + 'km';
 				} else if (data.opmode.value == cpeService.serviceConstant.OPMODE.CLIENT) {
 					// Client mode
 					$scope.data.local.isAp = false;
 					$scope.data.local.status = $scope.data.local.str.success;
-					$scope.data.local.ssidOfAp = data.client.ssid;
-					$scope.data.local.bssid = data.client.bssid;
+					$scope.data.local.ssidOfAp = decodeURIComponent(data.client.ssid);
+					$scope.data.local.bssid = decodeURIComponent(data.client.bssid);
 					$scope.data.local.key = data.client.key == undefined ? cpeService.serviceConstant.encryptions[0].name: data.client.key;
 					$scope.data.local.distance = data.client.ack_number + 'km';
 				}
@@ -923,18 +936,20 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					// AP mode
 					$scope.data.local.isAp = true;
 					$scope.data.local.status = $scope.data.local.str.ap;
-					$scope.data.local.ssid = data.ap.ssid;
+					$scope.data.local.ssid = decodeURIComponent(data.ap.ssid);
 					$scope.data.local.wirelessMode = cpeService.serviceConstant.wirelessModes[data.ap.mode].name;
-					$scope.data.local.channel = cpeService.serviceConstant.channels[data.ap.channel].name;
+					var channelIndex = cpeService.transformService.getWirelessChannelIndex(data.ap.channel);
+					$scope.data.local.channel = cpeService.serviceConstant.channels[channelIndex].name;
 					$scope.data.local.bandwidth = cpeService.serviceConstant.bandwidths[data.ap.bandwidth].name;
 					$scope.data.local.encryption = cpeService.serviceConstant.encryptions[data.ap.encryption].name;
+					$scope.data.local.key = data.ap.key;
 					$scope.data.local.distance = data.ap.ack_number + 'km';
 				} else if (data.opmode == cpeService.serviceConstant.OPMODE.CLIENT) {
 					// Client mode
 					$scope.data.local.isAp = false;
 					$scope.data.local.status = $scope.data.local.str.client;
-					$scope.data.local.ssidOfAp = data.client.ssid;
-					$scope.data.local.bssid = data.client.bssid;
+					$scope.data.local.ssidOfAp = decodeURIComponent(data.client.ssid);
+					$scope.data.local.bssid = decodeURIComponent(data.client.bssid);
 					$scope.data.local.key = data.client.key == undefined ? cpeService.serviceConstant.encryptions[0].name: data.client.key;
 					$scope.data.local.distance = data.client.ack_number + 'km';
 				}
@@ -949,8 +964,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 				$state.go('opmode');
 			},
 			goToPcWeb: function() {
-				return;
-				window.location.href = 'pc_web.html';
+				document.location = cpeService.serviceConstant.PC_SITE;
 			}
 		}
 	}
