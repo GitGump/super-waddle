@@ -2,6 +2,10 @@
   display: none;
 }
 
+.popup-container .popup {
+  width: 80%;
+}
+
 .fl {
   float: right;
 }
@@ -222,4 +226,31 @@
   margin-left: 10%;
   text-align: center;
   color: #999;
+}
+
+.wifi-signal-icon {
+  background: url(../img/wifi.png) no-repeat;
+  background-size: 400% 100%;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-top: -20px;
+  margin-right: -34px;
+  float: right;
+}
+
+.wifi3 {
+  background-position: -60px 0;
+}
+
+.wifi2 {
+  background-position: -40px 0;
+}
+
+.wifi1 {
+  background-position: -20px 0;
+}
+
+.wifi0 {
+  background-position: 0 0;
 }

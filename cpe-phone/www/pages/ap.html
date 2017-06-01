@@ -70,22 +70,6 @@
 						<span class="item-alert" ng-bind="data.local.str.invalidKey"></span>
 					</div>
 				</div>
-				<ion-item class="item-input">
-					<label class="input-label" ng-bind="data.local.str.distanceInput"></label>
-					<input ng-model="data.local.distance" name="distance" type="number" min="0" max="24" placeholder="{{data.local.str.distancePlaceholder}}" required></input>
-					<label class="input-label">km</label>
-				</ion-item>
-				<div ng-messages="ap.form.distance.$error" ng-show="ap.form.distance.$dirty">
-					<div ng-message="required">
-						<span class="item-alert" ng-bind="data.local.str.required"></span>
-					</div>
-					<div ng-message="min, max">
-						<span class="item-alert" ng-bind="data.local.str.distanceExceed"></span>
-					</div>
-					<div ng-message="number">
-						<span class="item-alert" ng-bind="data.local.str.distanceExceed"></span>
-					</div>
-				</div>
 			</ion-list>
 		</ng-form>
 		<button ng-disabled="ap.form.$invalid" ng-click="action.goToNext()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.nextStep"></button>

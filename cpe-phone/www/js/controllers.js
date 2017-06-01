@@ -67,7 +67,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					confirm: '确定',
 					signIn: '登录',
 					required: '此项为必填项',
-					invalidUsername: '用户名应该只包含字母、数字、或下划线"_"',
+					invalidUsername: '用户名应该只包含字母、数字、"@"、"_"、"-"或"."',
 					invalidPassword: '无效的密码',
 					usernameLength: '用户名长度不能超过31位',
 					passwordLength: '请输入6-15位字符',
@@ -278,7 +278,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 	}
 ])
 
-.controller('opmodeCtrl', ['cpeService', '$scope', '$state', '$rootScope', 
+.controller('opmodeCtrl', ['cpeService', '$scope', '$state', '$rootScope',
 	function(cpeService, $scope, $state, $rootScope) {
 		$scope.data = {
 			local: {
@@ -348,6 +348,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 
 .controller('apCtrl', ['$scope', '$rootScope', '$state', 'cpeService', '$interval', 'controllerUtil',
 	function($scope, $rootScope, $state, cpeService, $interval, controllerUtil) {
+		$scope.$on('$ionicView.beforeEnter', beforeEnterCallback);
 		$scope.data = {
 			local: {
 				str: {
@@ -364,15 +365,12 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					dbm: '功率(dBm)',
 					channelInput: '无线信道',
 					bandwidthInput: '无线带宽',
-					distanceInput: '距离设置',
-					distancePlaceholder: '发射端与接受端的距离',
 					nextStep: '下一步',
 					required: '此项为必填项',
 					invalidSsid: 'SSID格式错误！最好设置为字母、数字和符号的组合',
 					ssidLength: 'SSID长度不能超过32位',
 					invalidKey: '密码中存在非法字符，请重新输入8 - 63位的ASCII码字符串',
 					keyLength: '请输入8 - 63位字符串',
-					distanceExceed: '输入范围为0 - 24',
 					isSetting: '正在设置CPE...'
 				},
 				inputType: 'password',
@@ -538,7 +536,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					var current = response.current;
 					var newCurrent = [];
 					for (var i = 1; i < 320; i += 7) {
-							newCurrent.push(current[i]);
+						newCurrent.push(current[i]);
 					}
 					var peak = response.peak;
 					var newPeak = [];
@@ -556,8 +554,12 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 			});
 		}
 
-		// Do not fire spectrum analysis now, something about capbility still need discussing
-		// startSpectrumAnalysis($scope.data.local.spectrum.range[0]);
+		function beforeEnterCallback() {
+			$scope.action.changeModeOrChannel();
+			$scope.action.changeBandwidth();
+			// Do not fire spectrum analysis now, something about capbility still need discussing
+			// startSpectrumAnalysis($scope.data.local.spectrum.range[0]);
+		}
 
 		$scope.action = {
 			changeModeOrChannel: function() {
@@ -596,8 +598,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					encryption: $scope.data.local.encryption,
 					key: $scope.data.local.key,
 					channel: $scope.data.local.channel,
-					bandwidth: $scope.data.local.bandwidth,
-					distance: $scope.data.local.distance
+					bandwidth: $scope.data.local.bandwidth
 				};
 
 				var lan = {
@@ -613,8 +614,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					encryption: $scope.data.local.encryption.value,
 					key: $scope.data.local.key,
 					channel: $scope.data.local.channel.value,
-					bandwidth: $scope.data.local.bandwidth.value,
-					ack_number: $scope.data.local.distance.toString()
+					bandwidth: $scope.data.local.bandwidth.value
 				}
 
 				var requestData = {
@@ -663,19 +663,18 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 				}
 			}
 		}
-
-		$scope.action.changeModeOrChannel();
-		$scope.action.changeBandwidth();
 	}
 ])
 
 .controller('clientCtrl', ['$scope', '$rootScope', '$state', 'cpeService', 'controllerUtil',
 	function($scope, $rootScope, $state, cpeService, controllerUtil) {
+		$scope.$on('$ionicView.beforeEnter', beforeEnterCallback);
 		$scope.data = {
 			local: {
 				str: {
 					step3: '第三步，Client 设置',
 					selectNetwork: '请选择远程AP SSID',
+					isScanning: '扫描中...',
 					detail: '详情',
 					packup: '收起',
 					other: '其他',
@@ -686,16 +685,13 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					ssidOfAp: '远程AP SSID',
 					inputKey: '输入密钥',
 					encryption: '加密方式',
-					distanceInput: '距离设置',
 					select: '选择',
-					distancePlaceholder: '发射端与接受端的距离',
 					nextStep: '下一步',
 					required: '此项为必填项',
 					invalidSsid: 'SSID格式错误！最好设置为字母、数字和符号的组合',
 					ssidLength: 'SSID长度不能超过32位',
 					invalidKey: '密码中存在非法字符，请重新输入8 - 63位的ASCII码字符串',
 					keyLength: '请输入8 - 63位字符串',
-					distanceExceed: '输入范围为0 - 24',
 					isSetting: '正在设置CPE...'
 				},
 				isScanning: true,
@@ -745,7 +741,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 				var device = newList[item];
 				device.isPackup = true;
 				device.deviceDetailEntry = $scope.data.local.str.detail;
-				device.index = item;
 				device.deviceName = decodeURIComponent(device.device_name);
 				device.ssid = decodeURIComponent(device.ssid);
 				device.bssid = decodeURIComponent(device.bssid);
@@ -762,8 +757,11 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 			return newList;
 		}
 
-		getScanList();
-		$scope.data.local.input.encryption = $scope.data.local.encryptions[0];
+		function beforeEnterCallback() {
+			$scope.data.local.devices = [];
+			$scope.data.local.isScanning = true;
+			getScanList();
+		}
 
 		$scope.action = {
 			refreshScanList: function() {
@@ -773,11 +771,11 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 			},
 			showDeviceDetail: function(device) {
 				if (device.isPackup) {
-					$scope.data.local.devices[device.index].deviceDetailEntry = $scope.data.local.str.packup;
+					device.deviceDetailEntry = $scope.data.local.str.packup;
 				} else {
-					$scope.data.local.devices[device.index].deviceDetailEntry = $scope.data.local.str.detail;
+					device.deviceDetailEntry = $scope.data.local.str.detail;
 				}
-				$scope.data.local.devices[device.index].isPackup = !$scope.data.local.devices[device.index].isPackup;
+				device.isPackup = !device.isPackup;
 			},
 			scanConnect: function(device) {
 				var title = device.ssid;
@@ -793,22 +791,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					proto: 'static'
 				};
 
-				cpeService.promptService.promptWithOptions({
-					templateUrl: device.isEncrypted ? 'client-scan-connect-encrypted.html' : 'client-scan-connect.html',
-					title: title,
-					scope: $scope,
-					okText: cpeService.serviceConstant.STR.COMMON.BUTTON.NEXT,
-					cancelText: cpeService.serviceConstant.STR.COMMON.BUTTON.CANCEL
-				}, function(input) {
-					if (input == undefined) {
-						// Click 'CANCEL', do nothing
-						return;
-					}
-					if (device.isEncrypted) {
-						wlan_wds_5g.key = $scope.data.local.scan.key;
-					}
-					wlan_wds_5g.ack_number = $scope.data.local.scan.distance.toString();
-					cpeService.serviceValue.global.local.client = wlan_wds_5g;
+				if (!device.isEncrypted) {
 					var requestData = {
 						method: 'set',
 						opmode: {
@@ -826,11 +809,49 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					};
 					cpeService.promptService.loading.show(cpeService.serviceConstant.STR.COMMON.LABEL.ISSETTING);
 					controllerUtil.submitData(requestData);
-				});
+				} else {
+					cpeService.promptService.promptWithOptions({
+						templateUrl: 'client-scan-connect-encrypted.html',
+						title: title,
+						scope: $scope,
+						okText: cpeService.serviceConstant.STR.COMMON.BUTTON.NEXT,
+						cancelText: cpeService.serviceConstant.STR.COMMON.BUTTON.CANCEL
+					}, function(input) {
+						if (typeof input == 'undefined') {
+							// Click 'CANCEL', do nothing
+							return;
+						}
+						if (device.isEncrypted) {
+							wlan_wds_5g.key = $scope.data.local.scan.key;
+						}
+						var requestData = {
+							method: 'set',
+							opmode: {
+								op: {
+									old_mode: cpeService.serviceValue.global.server.opmode,
+									new_mode: cpeService.serviceValue.global.local.opmode.value
+								}
+							},
+							network: {
+								lan: lan
+							},
+							wireless: {
+								wlan_wds_5g: wlan_wds_5g
+							}
+						};
+						cpeService.promptService.loading.show(cpeService.serviceConstant.STR.COMMON.LABEL.ISSETTING);
+						controllerUtil.submitData(requestData);
+					});
+				}
+				cpeService.serviceValue.global.local.client = wlan_wds_5g;
 			},
 			switchConnectType: function() {
 				$scope.data.local.scanConnect = !$scope.data.local.scanConnect;
-				$scope.action.refreshScanList();
+				if ($scope.data.local.scanConnect) {
+					$scope.action.refreshScanList();
+				} else {
+					$scope.data.local.input.encryption = $scope.data.local.encryptions[0];
+				}
 			},
 			inputConnect: function() {
 				var lan = {
@@ -842,8 +863,7 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					enable: '1',
 					ssid: encodeURIComponent($scope.data.local.input.ssid),
 					encryption: $scope.data.local.input.encryption.value,
-					key: $scope.data.local.input.key,
-					ack_number: $scope.data.local.input.distance.toString()
+					key: $scope.data.local.input.key
 				};
 				cpeService.serviceValue.global.local.client = wlan_wds_5g;
 				var requestData = {
@@ -895,7 +915,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					bandwidth: '信道带宽',
 					channel: '信道/频率',
 					encryption: '加密方式',
-					distance: '距离设置',
 					ssidOfAp: '远程 AP SSID',
 					key: '无线密码',
 					bssid: 'MAC 地址',
@@ -920,7 +939,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					$scope.data.local.bandwidth = data.ap.bandwidth.name;
 					$scope.data.local.encryption = data.ap.encryption.name;
 					$scope.data.local.key = data.ap.key;
-					$scope.data.local.distance = data.ap.distance + 'km';
 				} else if (data.opmode.value == cpeService.serviceConstant.OPMODE.CLIENT) {
 					// Client mode
 					$scope.data.local.isAp = false;
@@ -928,7 +946,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					$scope.data.local.ssidOfAp = decodeURIComponent(data.client.ssid);
 					$scope.data.local.bssid = decodeURIComponent(data.client.bssid);
 					$scope.data.local.key = data.client.key == undefined ? cpeService.serviceConstant.encryptions[0].name: data.client.key;
-					$scope.data.local.distance = data.client.ack_number + 'km';
 				}
 			} else {
 				var data = cpeService.serviceValue.global.server;
@@ -943,7 +960,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					$scope.data.local.bandwidth = cpeService.serviceConstant.bandwidths[data.ap.bandwidth].name;
 					$scope.data.local.encryption = cpeService.serviceConstant.encryptions[data.ap.encryption].name;
 					$scope.data.local.key = data.ap.key;
-					$scope.data.local.distance = data.ap.ack_number + 'km';
 				} else if (data.opmode == cpeService.serviceConstant.OPMODE.CLIENT) {
 					// Client mode
 					$scope.data.local.isAp = false;
@@ -951,7 +967,6 @@ angular.module('cpe-phone.controllers', ['cpe-phone.services', 'ui.router'])
 					$scope.data.local.ssidOfAp = decodeURIComponent(data.client.ssid);
 					$scope.data.local.bssid = decodeURIComponent(data.client.bssid);
 					$scope.data.local.key = data.client.key == undefined ? cpeService.serviceConstant.encryptions[0].name: data.client.key;
-					$scope.data.local.distance = data.client.ack_number + 'km';
 				}
 			}
 			$scope.data.local.ipaddr = data.lan.ipaddr;
