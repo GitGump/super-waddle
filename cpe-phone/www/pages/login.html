@@ -1,48 +1,64 @@
-<ion-view title="{{data.local.str.title}}">
-	<ion-content class="padding-top">
-		<ng-form name="login.form" novalidate>
-			<span ng-if="cpeService.serviceValue.isSessionTimeout" class="show item-warning" ng-bind="cpeService.serviceConstant.STR.LOGIN.ALERT.SESSIONTIMEOUT"></span>
-			<span ng-if="cpeService.serviceValue.isLocked" class="show item-alert" ng-bind="cpeService.serviceConstant.STR.LOGIN.ALERT.CLIENTLOCKED"></span>
-			<span ng-if="data.local.attempLoginTimesLeft <= 5 && data.local.attempLoginTimesLeft > 0" class="show item-alert">{{data.local.str.usernamePwdErr + data.local.attempLoginTimesLeft}}</span>
-			<ion-list>
-				<ion-item class="item-input">
-					<label ng-if="cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.setUsername"></label>
-					<label ng-if="!cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.inputUsername"></label>
-					<input ng-disabled="cpeService.serviceValue.isLocked" ng-model="data.local.username" name="username" type="text" maxlength="31" placeholder="{{data.local.str.inputUsername}}" required check-login-username></input>
-				</ion-item>
-				<div ng-show="login.form.username.$dirty" ng-messages="login.form.username.$error">
-					<div ng-message="required">
-						<span class="item-alert" ng-bind="data.local.str.required"></span>
-					</div>
-					<div ng-message="maxlength">
-						<span class="item-alert" ng-bind="data.local.str.usernameLength"></span>
-					</div>
-					<div ng-message="checkLoginUsername">
-						<span class="item-alert" ng-bind="data.local.str.invalidUsername"></span>
-					</div>
+<ion-view title="{{data.local.str.title}}" hide-back-button="true">
+	<ion-content ng-hide="data.local.isLoading">
+		<span ng-if="cpeService.serviceValue.isSessionTimeout" class="show item-warning" ng-bind="cpeService.serviceConstant.STR.LOGIN.ALERT.SESSIONTIMEOUT"></span>
+		<span ng-if="cpeService.serviceValue.isLocked" class="show item-alert" ng-bind="cpeService.serviceConstant.STR.LOGIN.ALERT.CLIENTLOCKED"></span>
+		<span ng-if="data.local.attempLoginTimesLeft <= 5 && data.local.attempLoginTimesLeft > 0" class="show item-alert">{{data.local.str.usernamePwdErr + data.local.attempLoginTimesLeft}}</span>
+		<ng-form ng-if="!cpeService.serviceValue.isMonitorSuite" name="login.form" novalidate>
+			<ion-item class="item-input">
+				<label ng-if="cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.setUsername"></label>
+				<label ng-if="!cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.inputUsername"></label>
+				<input ng-disabled="cpeService.serviceValue.isLocked" ng-model="data.local.username" ng-trim="false" name="username" type="text" maxlength="31" placeholder="{{data.local.str.inputUsername}}" required check-login-username></input>
+			</ion-item>
+			<div ng-show="login.form.username.$dirty" ng-messages="login.form.username.$error">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.usernameBlank"></span>
 				</div>
-				<ion-item class="item-input item-icon-right">
-					<label ng-if="cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.setPassword"></label>
-					<label ng-if="!cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.inputPassword"></label>
-					<input ng-disabled="cpeService.serviceValue.isLocked" ng-model="data.local.password" minlength="6" maxlength="15" name="password" type="{{data.local.inputType}}" placeholder="{{data.local.str.inputPassword}}" required check-login-password></input>
-					<i ng-show="data.local.password.length > 0" ng-click="action.showPassword()" class="icon ion-eye {{data.local.eyecls}}"></i>
-				</ion-item>
-				<div ng-messages="login.form.password.$error" ng-show="login.form.password.$dirty">
-					<div ng-message="required">
-						<span class="item-alert" ng-bind="data.local.str.required"></span>
-					</div>
-					<div ng-message="minlength, maxlength">
-						<span class="item-alert" ng-bind="data.local.str.passwordLength"></span>
-					</div>
-					<div ng-message="checkLoginPassword">
-						<span class="item-alert" ng-bind="data.local.str.invalidPassword"></span>
-					</div>
+				<div ng-message="maxlength">
+					<span class="item-alert" ng-bind="data.local.str.usernameLength"></span>
 				</div>
-				<ion-checkbox ng-disabled="cpeService.serviceValue.isLocked" class="item-height" ng-checked="data.local.isTermsAgreed" ng-model="data.local.isTermsAgreed"></ion-checkbox>
-				<ion-label class="terms-of-services">{{data.local.str.agree}}<span class="calm" ng-click="!cpeService.serviceValue.isLocked && action.showTerms()">{{data.local.str.termsTitle}}</span></ion-label>
-			</ion-list>
+				<div ng-message="checkLoginUsername">
+					<span class="item-alert" ng-bind="data.local.str.invalidUsername"></span>
+				</div>
+			</div>
+			<ion-item class="item-input item-icon-right">
+				<label ng-if="cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.setPassword"></label>
+				<label ng-if="!cpeService.serviceValue.isFactory" class="input-label" ng-bind="data.local.str.inputPassword"></label>
+				<input ng-disabled="cpeService.serviceValue.isLocked" ng-model="data.local.password" ng-trim="false" minlength="6" maxlength="15" name="password" type="{{data.local.inputType}}" placeholder="{{data.local.str.inputPassword}}" required check-login-password></input>
+				<i ng-show="login.form.password.$viewValue" ng-click="action.showPassword()" class="icon ion-eye placeholder-icon {{data.local.eyecls}}"></i>
+			</ion-item>
+			<div ng-messages="login.form.password.$error" ng-show="login.form.password.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.passwordBlank"></span>
+				</div>
+				<div ng-message="minlength, maxlength">
+					<span class="item-alert" ng-bind="data.local.str.passwordLength"></span>
+				</div>
+				<div ng-message="checkLoginPassword">
+					<span class="item-alert" ng-bind="data.local.str.invalidPassword"></span>
+				</div>
+			</div>
+			<button ng-if="cpeService.serviceValue.isFactory && !cpeService.serviceValue.isMonitorSuite" ng-disabled="login.form.$invalid" ng-click="action.signUp()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.confirm"></button>
+			<button ng-if="!cpeService.serviceValue.isFactory && !cpeService.serviceValue.isMonitorSuite" ng-disabled="login.form.$invalid || cpeService.serviceValue.isLocked" ng-click="action.signIn()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.signIn"></button>
 		</ng-form>
-		<button ng-if="cpeService.serviceValue.isFactory" ng-disabled="login.form.$invalid || !data.local.isTermsAgreed" ng-click="action.signUp()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.confirm"></button>
-		<button ng-if="!cpeService.serviceValue.isFactory" ng-disabled="login.form.$invalid || !data.local.isTermsAgreed || cpeService.serviceValue.isLocked" ng-click="action.signIn()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.signIn"></button>
+		<ng-form ng-if="cpeService.serviceValue.isMonitorSuite" name="login.form2" novalidate>
+			<ion-item class="item-input item-icon-right">
+				<label class="input-label" ng-bind="data.local.str.managePassword"></label>
+				<input class="item-label-icon-input" ng-model="data.local.password" ng-trim="false" minlength="6" maxlength="15" name="password" placeholder="{{data.local.str.managepwdPlaceholder}}" type="{{data.local.inputType}}" required check-login-password></input>
+				<i ng-show="login.form2.password.$viewValue" ng-click="action.showPassword()" class="icon ion-eye placeholder-icon {{data.local.eyecls}}"></i>
+			</ion-item>
+			<div ng-messages="login.form2.password.$error" ng-show="login.form2.password.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.passwordBlank"></span>
+				</div>
+				<div ng-message="minlength, maxlength">
+					<span class="item-alert" ng-bind="data.local.str.passwordLength"></span>
+				</div>
+				<div ng-message="checkLoginPassword">
+					<span class="item-alert" ng-bind="data.local.str.invalidPassword"></span>
+				</div>
+			</div>
+			<button ng-if="cpeService.serviceValue.isMonitorSuite" ng-click="action.signIn()" class="button button-positive button-wx next-step-btn" ng-disabled="login.form2.$invalid || cpeService.serviceValue.isLocked" ng-bind="data.local.str.signIn"></button>
+			<button ng-if="cpeService.serviceValue.isMonitorSuite" ng-click="action.goChangePwd()" class="button button-positive button-wx button-outline positive next-step-btn" ng-disabled="cpeService.serviceValue.isLocked" ng-bind="data.local.str.changePassword"></button>
+		</ng-form>
 	</ion-content>
 </ion-view>

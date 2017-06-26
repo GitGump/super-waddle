@@ -1,42 +1,41 @@
 <ion-view title="{{data.local.str.step3}}">
 	<ion-content class="padding-top">
 		<ion-list ng-if="data.local.scanConnect">
-			<ion-item class="item-icon-right">
-				<span ng-if="data.local.isScanning" class="item-label" ng-bind="data.local.str.isScanning"></span>
-				<span ng-if="!data.local.isScanning" class="item-label" ng-bind="data.local.str.selectNetwork"></span>
-				<ion-spinner ng-if="data.local.isScanning" class="fr positive spinner mr-30"></ion-spinner>
-				<i ng-if="!data.local.isScanning" ng-click="action.refreshScanList()" class="icon ion-refresh positive"></i>
-			</ion-item>
+			<div>
+				<span ng-if="data.local.isScanning" class="list-title" ng-bind="data.local.str.isScanning"></span>
+				<span ng-if="!data.local.isScanning" class="list-title" ng-bind="data.local.str.selectNetwork"></span>
+				<ion-spinner ng-if="data.local.isScanning" class="fr positive spinner mr-30 scan-icon"></ion-spinner>
+				<i ng-if="!data.local.isScanning" ng-click="action.refreshScanList()" class="scan-icon icon ion-refresh positive fr fz24"></i>
+			</div>
 			<ion-item ng-click="action.scanConnect(device)" ng-repeat="device in data.local.devices | orderBy: ['device_name', 'snr'] : true" class="card nowrap">
-				<ion-item class="item-icon-right item-button-right">
-					<h2 ng-class="{true: '', false: 'mt-5'}[device.device_name == '']" ng-bind="device.ssid"></h2>
-					<p ng-if="device.device_name != ''" class="mb-15" ng-bind="device.deviceName"></p>
-					<i ng-if="device.isEncrypted" class="icon ion-locked small positive r65"></i>
-					<i ng-if="false" class="icon ion-wifi small positive r40"></i>
+				<ion-item class="item-icon-right item-button-right h60">
+					<h2 ng-class="{true: 'mt5', false: 'mt-5'}[device.device_name == '']" ng-bind="device.ssid"></h2>
+					<p ng-if="device.device_name != ''" ng-class="{true: 'mt20', false: 'mb-15'}[device.ssid == '']" ng-bind="device.deviceName"></p>
+					<i ng-if="device.isEncrypted" class="icon ion-locked small positive r55"></i>
 					<div ng-if="device.snr >= 30" class="wifi-signal-icon wifi3"></div>
 					<div ng-if="device.snr < 30 && device.snr >= 15" class="wifi-signal-icon wifi2"></div>
 					<div ng-if="device.snr < 15 && device.snr >= 5" class="wifi-signal-icon wifi1"></div>
 					<div ng-if="device.snr < 5" class="wifi-signal-icon wifi0"></div>
-					<button ng-click="action.showDeviceDetail(device); $event.stopPropagation();" class="button button-positive button-clear button-text-small button-right-0 mt3">{{device.deviceDetailEntry}}</button>
+					<button ng-click="action.showDeviceDetail(device); $event.stopPropagation();" class="button button-positive button-clear button-text-small button-right-0 mt6">{{device.deviceDetailEntry}}</button>
 				</ion-item>
 				<ion-item ng-if="!device.isPackup" class="item-body">
-					<ion-item>
+					<ion-item class="no-border-bottom">
 						<span ng-bind="data.local.str.bssid"></span>
 						<span class="item-note" ng-bind="device.bssid"></span>
 					</ion-item>
-					<ion-item>
+					<ion-item class="no-border-top no-border-bottom">
 						<span ng-bind="data.local.str.snr"></span>
 						<span class="item-note" ng-bind="device.snr"></span>
 					</ion-item>
-					<ion-item>
+					<ion-item class="no-border-top no-border-bottom">
 						<span ng-bind="data.local.str.noise"></span>
 						<span class="item-note" ng-bind="device.signalNoiseRatio"></span>
 					</ion-item>
-					<ion-item>
+					<ion-item class="no-border-top no-border-bottom">
 						<span ng-bind="data.local.str.channel"></span>
 						<span class="item-note" ng-bind="device.channelStr"></span>
 					</ion-item>
-					<ion-item ng-if="device.isEncrypted">
+					<ion-item class="no-border-top" ng-if="device.isEncrypted">
 						<span ng-bind="data.local.str.encryption"></span>
 						<span class="item-note" ng-bind="device.encryptionStr"></span>
 					</ion-item>
@@ -50,12 +49,12 @@
 			<ion-list ng-if="!data.local.scanConnect">
 				<ion-item class="item-input item-button-right">
 					<label class="input-label" ng-bind="data.local.str.ssidOfAp"></label>
-					<input ng-model="data.local.input.ssid" name="ssid" type="text" maxlength="32" placeholder="{{data.local.str.ssidOfAp}}" required check-wireless-ssid></input>
+					<input class="item-label-button-input" ng-model="data.local.input.ssid" ng-trim="false" name="ssid" type="text" minlength="1" maxlength="32" placeholder="{{data.local.str.ssidOfAp}}" required check-wireless-ssid></input>
 					<button ng-click="action.switchConnectType()" class="button button-positive button-clear" ng-bind="data.local.str.select"></button>
 				</ion-item>
 				<div ng-messages="client.form.ssid.$error" ng-show="client.form.ssid.$dirty">
 					<div ng-message="required">
-						<span class="item-alert" ng-bind="data.local.str.required"></span>
+						<span class="item-alert" ng-bind="data.local.str.ssidOfApBlank"></span>
 					</div>
 					<div ng-message="maxlength">
 						<span class="item-alert" ng-bind="data.local.str.ssidLength"></span>
@@ -65,17 +64,17 @@
 					</div>
 				</div>
 				<ion-item class="item-select">
-					<label class="item-label" ng-bind="data.local.str.encryption"></label>
+					<label class="input-label" ng-bind="data.local.str.encryption"></label>
 					<select ng-model="data.local.input.encryption" ng-options="encryption.name for encryption in data.local.encryptions"></select>
 				</ion-item>
 				<ion-item ng-if="data.local.input.encryption.value == 1" class="item-input item-icon-right">
 					<label class="input-label" ng-bind="data.local.str.inputKey"></label>
-					<input ng-model="data.local.input.key" minlength="8" maxlength="63" name="key" type="{{data.local.inputType}}" placeholder="{{data.local.str.inputKey}}" required check-wireless-key></input>
-					<i ng-show="data.local.input.key.length > 0" ng-click="action.togglePassword()" class="icon ion-eye {{data.local.eyecls}}"></i>
+					<input class="item-label-icon-input" ng-model="data.local.input.key" ng-trim="false" minlength="8" maxlength="63" name="key" type="{{data.local.inputType}}" placeholder="{{data.local.str.inputKey}}" required check-wireless-key></input>
+					<i ng-show="client.form.key.$viewValue" ng-click="action.togglePassword()" class="icon ion-eye placeholder-icon {{data.local.eyecls}}"></i>
 				</ion-item>
 				<div ng-messages="client.form.key.$error" ng-show="client.form.key.$dirty">
 					<div ng-message="required">
-						<span class="item-alert" ng-bind="data.local.str.required"></span>
+						<span class="item-alert" ng-bind="data.local.str.keyBlank"></span>
 					</div>
 					<div ng-message="minlength, maxlength">
 						<span class="item-alert" ng-bind="data.local.str.keyLength"></span>
@@ -90,14 +89,67 @@
 	</ion-content>
 
 	<script type="text/ng-template" id="client-scan-connect-encrypted.html">
-		<ng-form name="scan.form2" novalidate>
+		<ng-form name="client.form2" novalidate>
 			<ion-item class="item-input item-icon-right">
-				<input ng-model="data.local.scan.key" type="{{data.local.inputType}}" name="key" minlength="8" maxlength="63" placeholder="{{data.local.str.inputKey}}" check-wireless-key required></input>
-				<i ng-if="data.local.scan.key.length > 0" ng-click="action.togglePassword()" class="icon ion-eye placeholder-icon {{data.local.eyecls}}"></i>
+				<input class="item-icon-input" ng-model="data.local.scan.key" ng-trim="false" type="{{data.local.inputType}}" name="key" minlength="8" maxlength="63" placeholder="{{data.local.str.inputKey}}" check-wireless-key required></input>
+				<i ng-show="client.form2.key.$viewValue" ng-click="action.togglePassword()" class="icon ion-eye placeholder-icon {{data.local.eyecls}}"></i>
 			</ion-item>
-			<div ng-messages="scan.form2.key.$error" ng-show="scan.form2.key.$dirty">
+			<div ng-messages="client.form2.key.$error" ng-show="client.form2.key.$dirty">
 				<div ng-message="required">
-					<span class="item-alert" ng-bind="data.local.str.required"></span>
+					<span class="item-alert" ng-bind="data.local.str.keyBlank"></span>
+				</div>
+				<div ng-message="minlength, maxlength">
+					<span class="item-alert" ng-bind="data.local.str.keyLength"></span>
+				</div>
+				<div ng-message="checkWirelessKey">
+					<span class="item-alert" ng-bind="data.local.str.invalidKey"></scan>
+				</div>
+			</div>
+		</ng-form>
+	</script>
+
+	<script type="text/ng-template" id="client-scan-connect-hiddenssid.html">
+		<ng-form name="client.form3" novalidate>
+			<ion-item class="item-input">
+				<input class="item-button-input" ng-model="data.local.scan.ssid" ng-trim="false" name="ssid" type="text" minlength="1" maxlength="32" placeholder="{{data.local.str.ssidOfApPlaceholder}}" required check-wireless-ssid></input>
+			</ion-item>
+			<div ng-messages="client.form3.ssid.$error" ng-show="client.form3.ssid.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.ssidOfApBlank"></span>
+				</div>
+				<div ng-message="maxlength">
+					<span class="item-alert" ng-bind="data.local.str.ssidLength"></span>
+				</div>
+				<div ng-message="checkWirelessSsid">
+					<span class="item-alert" ng-bind="data.local.str.invalidSsid"></span>
+				</div>
+			</div>
+		</ng-form>
+	</script>
+
+	<script type="text/ng-template" id="client-scan-connect-hiddenssid-encrypted.html">
+		<ng-form name="client.form4" novalidate>
+			<ion-item class="item-input">
+				<input class="item-button-input" ng-model="data.local.scan.ssid" ng-trim="false" name="ssid" type="text" minlength="1" maxlength="32" placeholder="{{data.local.str.ssidOfApPlaceholder}}" required check-wireless-ssid></input>
+			</ion-item>
+			<div ng-messages="client.form4.ssid.$error" ng-show="client.form4.ssid.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.ssidOfApBlank"></span>
+				</div>
+				<div ng-message="maxlength">
+					<span class="item-alert" ng-bind="data.local.str.ssidLength"></span>
+				</div>
+				<div ng-message="checkWirelessSsid">
+					<span class="item-alert" ng-bind="data.local.str.invalidSsid"></span>
+				</div>
+			</div>
+			<ion-item class="item-input item-icon-right">
+				<input class="item-icon-input" ng-model="data.local.scan.key" ng-trim="false" type="{{data.local.inputType}}" name="key" minlength="8" maxlength="63" placeholder="{{data.local.str.inputKey}}" check-wireless-key required></input>
+				<i ng-show="client.form4.key.$viewValue" ng-click="action.togglePassword()" class="icon ion-eye placeholder-icon {{data.local.eyecls}}"></i>
+			</ion-item>
+			<div ng-messages="client.form4.key.$error" ng-show="client.form4.key.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.keyBlank"></span>
 				</div>
 				<div ng-message="minlength, maxlength">
 					<span class="item-alert" ng-bind="data.local.str.keyLength"></span>

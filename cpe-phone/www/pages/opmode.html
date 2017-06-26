@@ -3,7 +3,7 @@
 		<ion-radio ng-model="data.local.opmode" ng-value="opmode" ng-checked="opmode.value + 1 == $index" ng-repeat="opmode in data.local.opmodes">
 			<span ng-bind="opmode.name"></span>
 		</ion-radio>
-		<p class="calm padding-left mt20 mb20" ng-bind="data.local.str.opmodeEntry" ng-click="action.showOpmodeIntro()"></p>
+		<p class="calm padding-left mt20" ng-bind="data.local.str.opmodeEntry" ng-click="action.showOpmodeIntro()"></p>
 		<button class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.nextStep" ng-click="action.goToNext()"></button>
 	</ion-content>
 </ion-view>

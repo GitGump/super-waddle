@@ -1,0 +1,55 @@
+<ion-view title="{{data.local.str.title}}">
+	<ion-content>
+		<ng-form name="changepwd.form" novalidate>
+			<span ng-if="cpeService.serviceValue.isSessionTimeout" class="show item-warning" ng-bind="cpeService.serviceConstant.STR.CHANGEPWD.ALERT.SESSIONTIMEOUT"></span>
+			<span ng-if="cpeService.serviceValue.isLocked" class="show item-alert" ng-bind="cpeService.serviceConstant.STR.CHANGEPWD.ALERT.CLIENTLOCKED"></span>
+			<span ng-if="data.local.attempLoginTimesLeft <= 5 && data.local.attempLoginTimesLeft > 0" class="show item-alert">{{data.local.str.passwordError + data.local.attempLoginTimesLeft}}</span>
+			<ion-item class="item-input">
+				<label class="input-label" ng-bind="data.local.str.oldpwd"></label>
+				<input class="item-label-icon-input" ng-model="data.local.oldpwd" ng-trim="false" minlength="6" maxlength="15" name="oldpwd" type="password" placeholder="{{data.local.str.oldpwdPlaceholder}}" required check-login-password></input>
+			</ion-item>
+			<div ng-messages="changepwd.form.oldpwd.$error" ng-show="changepwd.form.oldpwd.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.oldpwdBlank"></span>
+				</div>
+				<div ng-message="minlength, maxlength">
+					<span class="item-alert" ng-bind="data.local.str.passwordLength"></span>
+				</div>
+				<div ng-message="checkLoginPassword">
+					<span class="item-alert" ng-bind="data.local.str.invalidPassword"></span>
+				</div>
+			</div>
+			<ion-item class="item-input">
+				<label class="input-label" ng-bind="data.local.str.newpwd"></label>
+				<input class="item-label-icon-input" ng-model="data.local.newpwd" ng-trim="false" minlength="6" maxlength="15" name="newpwd" type="password" placeholder="{{data.local.str.newpwdPlaceholder}}" required check-login-password></input>
+			</ion-item>
+			<div ng-messages="changepwd.form.newpwd.$error" ng-show="changepwd.form.newpwd.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.newpwdBlank"></span>
+				</div>
+				<div ng-message="minlength, maxlength">
+					<span class="item-alert" ng-bind="data.local.str.passwordLength"></span>
+				</div>
+				<div ng-message="checkLoginPassword">
+					<span class="item-alert" ng-bind="data.local.str.invalidPassword"></span>
+				</div>
+			</div>
+			<ion-item class="item-input">
+				<label class="input-label" ng-bind="data.local.str.confirmpwd"></label>
+				<input class="item-label-icon-input" ng-model="data.local.confirmpwd" ng-trim="false" minlength="6" maxlength="15" name="confirmpwd" type="password" placeholder="{{data.local.str.confirmpwdPlaceholder}}" required check-login-password></input>
+			</ion-item>
+			<div ng-messages="changepwd.form.confirmpwd.$error" ng-show="changepwd.form.confirmpwd.$dirty">
+				<div ng-message="required">
+					<span class="item-alert" ng-bind="data.local.str.confirmpwdPlaceholder"></span>
+				</div>
+				<div ng-show="changepwd.form.confirmpwd.$viewValue && data.local.confirmpwd != data.local.newpwd">
+					<span class="item-alert" ng-bind="data.local.str.passwordNotSame"></span>
+				</div>
+				<div ng-message="checkLoginPassword">
+					<span class="item-alert" ng-bind="data.local.str.invalidPassword"></span>
+				</div>
+			</div>
+		</ng-form>
+		<button ng-disabled="changepwd.form.$invalid || cpeService.serviceValue.isLocked" ng-click="action.changePassword()" class="button button-positive button-wx next-step-btn" ng-bind="data.local.str.confirm"></button>
+	</ion-content>
+</ion-view>

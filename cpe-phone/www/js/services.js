@@ -1,10 +1,12 @@
+'use strict';
+
 angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toastr'])
 
 .config(['localStorageServiceProvider',
   function(localStorageServiceProvider) {
     localStorageServiceProvider
       .setPrefix('cpe')
-      .setStorageType('sessionStorage')
+      .setStorageType('localStorage')
       .setStorageCookie(1, '/');
   }
 ])
@@ -115,6 +117,7 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
       BUTTON: {
         OK: '确定',
         CANCEL: '取消',
+        BACK: '返回',
         NEXT: '下一步',
         CLOSE: '关闭'
       },
@@ -124,10 +127,11 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
         SUCCESS: '成功',
         FAILGETDATA: '获取数据失败',
         FAILSETDATA: '设置失败',
-        UNKNOWNERR: '操作出现异常，请稍候再试'
+        UNKNOWNERR: '无线连接出现异常，请检查后重试'
       },
       LABEL: {
-        ISSETTING: '正在设置CPE...'
+        ISSETTING: '正在设置...',
+        ISSETTINGCPE: '正在设置CPE...'
       },
       ERRORCODE: {
         DEFAULT: '操作失败',
@@ -167,9 +171,17 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
     },
     LOGIN: {
       ALERT: {
+        NEEDLOGIN: '您需要重新登录！',
         WRONGUSERNAMEPWD: '用户名或者密码不正确',
+        WRONGPASSWORD: '密码不正确',
         SESSIONTIMEOUT: '会话超时，请重新登录',
         CLIENTLOCKED: '用户名或密码输入错误次数过多，请重启设备后再尝试登录'
+      }
+    },
+    CHANGEPWD: {
+      ALERT: {
+        WRONGPASSWORD: '密码不正确',
+        CLIENTLOCKED: '密码输入错误次数过多，请重启设备后再尝试登录'
       }
     }
   },
@@ -205,6 +217,8 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
   is2G: undefined,
   slpUrl: '',
   deviceName: '',
+  deviceModel: '',
+  hardwareVersion: '',
   devicePlatform: undefined,
   attemptLoginTimesLeft: 10,
   wireless5GModes: [],
@@ -214,7 +228,9 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
   global: {
     local: {},
     server: {}
-  }
+  },
+  // device hacks
+  isMonitorSuite: false
 })
 
 .factory('utilService', [
@@ -284,14 +300,14 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
         return false;
       };
       var sub_array = netmask.split('.');
-      for(i = 0; i < 4; i++){
+      for(var i = 0; i < 4; i++){
         if (sub_array[i] < 0 || sub_array[i] > 255){
           return false;
         };
       };
       var find_zero = false;
       var intIp = parseInt(parseInt(parseInt(sub_array[0])<<24) + parseInt(parseInt(sub_array[1])<<16) + parseInt(parseInt(sub_array[2])<<8) + parseInt(sub_array[3]));
-      for(i= 0; i < 32; ++i){
+      for(var i= 0; i < 32; ++i){
         var flag = 1<<(31-i);
         if(parseInt(intIp & flag) == parseInt(0)){
           find_zero = true;
@@ -323,11 +339,14 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
     }
 
     var checkSsidValid = function(ssid) {
-      if (!ssid || ssid.length > 32) {
+      if (!ssid) {
         return false;
       }
-      var reg = /^[\x20-\x7e]+$/g;
-      return reg.test(ssid);
+      var len = ssid.replace(/[^\x00-\xFF]/g, "xxx").length;
+      if (len < 1 || len > 32) {
+        return false;
+      }
+      return true;
     }
 
     var checkKeyValid = function(key) {
@@ -627,10 +646,78 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
   }
 ])
 
+.factory('routerService', ['serviceConstant', 'serviceValue', '$state', '$stateParams', '$ionicHistory',
+  function(serviceConstant, serviceValue, $state, $stateParams, $ionicHistory) {
+    var getCurrentPageName = function() {
+      return $ionicHistory.currentStateName().split('.')[0].split('-')[0];
+    }
+
+    var getPreviousPageName = function() {
+      if ($ionicHistory && $ionicHistory.backView() && $ionicHistory.backView().stateName) {
+        return $ionicHistory.backView().stateName;
+      } else {
+        return false;
+      }
+    }
+
+    var isAtLogin = function() {
+      return (getCurrentPageName() == 'login');
+    }
+
+    var goToPage = function(page, params, options, callback) {
+      if ($state.get(page)) {
+        $state.go(page, params, options);
+      } else {
+        console.warn("routerService.goToPage: page " + page + " doesn't exist!");
+        if (typeof callback === 'function') {
+          callback(page);
+        }
+      }
+    }
+
+    var goToLogin = function(params, options, callback) {
+      goToPage('login', params, options, callback);
+    }
+
+    var goBack = function(backCount) {
+      if (isAtLogin) {
+        cpeService.localDataService.clearAll();
+        cpeService.localDataService.clearAllCookie();
+        return;
+      }
+      if (backCount && typeof backCount === 'number' && backCount < -1) {
+        $ionicHistory.goBack(backCount);
+      } else {
+        $ionicHistory.goBack();
+      }
+    }
+
+    return {
+      getCurrentPageName: getCurrentPageName,
+      getPreviousPageName: getPreviousPageName,
+      isAtLogin: isAtLogin,
+      goToPage: goToPage,
+      goToLogin: goToLogin,
+      goBack: goBack
+    }
+  }
+])
+
 .factory('dataService', ['httpService', 'authService', 'serviceValue', 'serviceConstant',
   function(httpService, authService, serviceValue, serviceConstant) {
 
     var request = function(opts) {
+      var isLogin = cpeService.authInfoService.isLogin();
+      var stok = cpeService.authInfoService.getStok();
+      if (opts.jumpAuth) {
+        // do request
+      } else if (!isLogin || !stok) {
+        cpeService.promptService.toast.info(cpeService.serviceConstant.STR.LOGIN.ALERT.SESSIONTIMEOUT);
+        cpeService.routerService.goToLogin();
+      } else {
+        authService.setSlpUrl(stok);
+      }
+
       var url;
       if (opts.url) {
         url = opts.url;
@@ -656,7 +743,13 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
     var showErrMsg = function(response) {
       if (!response) {
         cpeService.promptService.toast.error(cpeService.serviceConstant.STR.COMMON.ALERT.UNKNOWNERR);
-      } else  if (response && response.error_code != 0) {
+      } else if (response && response.error_code) {
+        if (response.error_code == cpeService.serviceConstant.AUTH_RESULT.AUTH_ERROR) {
+          // auth fail, need relogin
+          cpeService.promptService.toast.info(cpeService.serviceConstant.STR.LOGIN.ALERT.SESSIONTIMEOUT);
+          cpeServive.routerService.goToLogin();
+          return;
+        }
         var errorCode = response.error_code.toString().slice(1);
         var errorMsg = cpeService.serviceConstant.STR.COMMON.ERRORCODE['e' + errorCode];
         if (!errorMsg) {
@@ -666,8 +759,97 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
       }
     }
 
-    var getDeviceStatus = function() {
+    var getModuleSpec = function(callback) {
+      cpeService.serviceValue.wireless5GModes = [];
+      cpeService.serviceValue.wireless5GChannels = [];
+      cpeService.serviceValue.wireless5GBandwidths = [];
       request({
+        data: {
+          method: 'get',
+          function: {
+            name: 'module_spec'
+          }
+        },
+        success: function(response) {
+          cpeService.promptService.loading.hide();
+          if (!response || response.error_code != 0) {
+            showErrMsg(response);
+            return;
+          }
+          var module_spec = response.function.module_spec;
+          var wirelessBand = module_spec.wireless_band;
+          if (wirelessBand.split(',').length === 2) {
+            // Support 2.4G and 5G
+            cpeService.serviceValue.is2G = 2;
+          } else {
+            if (wirelessBand == '2g') {
+              cpeService.serviceValue.is2G = 1;
+            } else if (wirelessBand == '5g') {
+              cpeService.serviceValue.is2G = 0;
+            }
+          }
+          if (cpeService.serviceValue.is2G === 0) {
+            // Get wireless 5g mode from module spec
+            var wireless5GMode = decodeURIComponent(module_spec.wireless5g_mode).split(',');
+            for (var i = 0; i < wireless5GMode.length; i++) {
+              wireless5GMode[i] = wireless5GMode[i].replace(/^\s*/, '');
+              var index = cpeService.transformService.getWirelessModeIndex(wireless5GMode[i]);
+              cpeService.serviceValue.wireless5GModes.push(cpeService.serviceConstant.wirelessModes[index]);
+            }
+            // Get wireless 5g channel from module spec
+            var wireless5GChannel = decodeURIComponent(module_spec.wireless5g_channel).split(',');
+            for (var i = 0; i < wireless5GChannel.length; i++) {
+              wireless5GChannel[i] = wireless5GChannel[i].replace(/^\s*/, '');
+              var index = cpeService.transformService.getWirelessChannelIndex(wireless5GChannel[i]);
+              cpeService.serviceValue.wireless5GChannels.push(cpeService.serviceConstant.channels[index]);
+            }
+            // Get wireless 5g bandwidth from module spec
+            var wireless5GBandwidth = decodeURIComponent(module_spec.wireless5g_bandwidth).split(',');
+            for (var i = 0; i< wireless5GBandwidth.length; i++) {
+              wireless5GBandwidth[i] = wireless5GBandwidth[i].replace(/^\s*/, '');
+              var index = cpeService.transformService.getWirelessBandwidthIndex(wireless5GBandwidth[i]);
+              cpeService.serviceValue.wireless5GBandwidths.push(cpeService.serviceConstant.bandwidths[index]);
+            }
+          }
+          if (typeof callback == 'function') {
+            callback();
+          }
+        },
+        failure: function(e) {
+          cpeService.promptService.loading.hide();
+          showErrMsg(e);
+          cpeService.serviceValue.wireless5GModes = cpeService.serviceConstant.wirelessModes;
+          cpeService.serviceValue.wireless5GChannels = cpeService.serviceConstant.channels;
+          cpeService.serviceValue.wireless5GBandwidths = cpeService.serviceConstant.bandwidths;
+        }
+      })
+    }
+
+    var getDomainList = function(callback) {
+      request({
+        jumpAuth: true,
+        url: authService.getUrl(),
+        data: {
+          method: 'do',
+          get_domain_array: null
+        },
+        success: function(response) {
+          if (response.error_code == 0) {
+            cpeService.serviceValue.domainList = response.domain_array;
+            if (typeof callback === 'function') {
+              callback();
+            }
+          }
+        },
+        failure: function(e) {
+          // never reach here
+        }
+      });
+    }
+
+    var getDeviceStatus = function(callback) {
+      request({
+        jumpAuth: true,
         url: authService.getUrl(),
         data: {
           method: 'get',
@@ -678,7 +860,12 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
         success: function(response) {
           // never reach here
         },
-        failure: getDeviceStatusCallback
+        failure: function(e) {
+          getDeviceStatusCallback(e);
+          if (typeof callback === 'function') {
+            callback();
+          }
+        }
       });
     }
 
@@ -709,17 +896,36 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
             break;
         }
       }
-      if (e.data && e.data.device_info && e.data.device_info.device_name) {
-        document.title = e.data.device_info.device_name;
-        cpeService.serviceValue.deviceName = e.data.device_info.device_name;
+      cpeService.serviceValue.deviceName = e.data && e.data.device_info && e.data.device_info.device_name;
+      cpeService.localDataService.set('device_name', cpeService.serviceValue.deviceName);
+      document.title = cpeService.serviceValue.deviceName;
+      cpeService.serviceValue.deviceModel = e.data && e.data.device_info && e.data.device_info.device_model;
+      cpeService.serviceValue.hardwareVersion = e.data && e.data.device_info && e.data.device_info.hw_version;
+      deviceHack(cpeService.serviceValue.deviceModel, cpeService.serviceValue.hardwareVersion);
+    }
+
+    var deviceHack = function(model, version) {
+      // device hacks
+      cpeService.localDataService.set('is_monitor_suite', false);
+      if (model.indexOf('S5000') != -1 && version == '1.0') {
+        cpeService.serviceValue.isMonitorSuite = true;
+        cpeService.localDataService.set('is_monitor_suite', true);
       }
+      // for local develop, comment out those codes before commit!
+      // if (model.indexOf('CPE521') != -1 && version == '1.0') {
+      //   cpeService.serviceValue.isMonitorSuite = true;
+      //   cpeService.localDataService.set('is_monitor_suite', true);
+      // }
     }
 
     return {
       request: request,
       showErrMsg: showErrMsg,
+      getModuleSpec: getModuleSpec,
+      getDomainList: getDomainList,
       getDeviceStatus: getDeviceStatus,
-      getDeviceStatusCallback: getDeviceStatusCallback
+      getDeviceStatusCallback: getDeviceStatusCallback,
+      deviceHack: deviceHack
     }
   }
 ])
@@ -782,19 +988,40 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
 .factory('authInfoService', ['serviceValue', 'localDataService',
   function(serviceValue, localDataService) {
     var markLogin = function(isLogin) {
-      serviceValue.isLogin = isLogin ? true : false;
+      localDataService.set('is_login', isLogin);
     }
 
     var isLogin = function() {
-      return serviceValue.isLogin ? true : false;
+      var isLogin = localDataService.get('is_login');
+      if (isLogin) {
+        return true;
+      } else {
+        return false;
+      }
     }
 
     var getStok = function() {
       return localDataService.getCookie('stok');
     }
 
+    var getUsername = function() {
+      return localDataService.get('username');
+    }
+
+    var getPassword = function() {
+      return localDataService.get('password');
+    }
+
     var setStok = function(stok) {
       return localDataService.setCookie('stok', stok);
+    }
+
+    var setUsername = function(username) {
+      return localDataService.set('username', username);
+    }
+
+    var setPassword = function(password) {
+      return localDataService.set('password', password);
     }
 
     var removeStok = function() {
@@ -805,7 +1032,11 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
       markLogin: markLogin,
       isLogin: isLogin,
       getStok: getStok,
+      getUsername: getUsername,
+      getPassword: getPassword,
       setStok: setStok,
+      setUsername: setUsername,
+      setPassword: setPassword,
       removeStok: removeStok
     }
   }
@@ -934,8 +1165,8 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
   }
 ])
 
-.factory('cpeService', ['$rootScope', '$window', 'serviceConstant', 'serviceValue', 'checkService', 'promptService', 'httpService', 'authService', 'dataService', 'localDataService', 'authInfoService', 'transformService',
-  function($rootScope, $window, serviceConstant, serviceValue, checkService, promptService, httpService, authService, dataService, localDataService, authInfoService, transformService) {
+.factory('cpeService', ['$rootScope', '$window', 'serviceConstant', 'serviceValue', 'checkService', 'promptService', 'httpService', 'authService', 'routerService', 'dataService', 'localDataService', 'authInfoService', 'transformService',
+  function($rootScope, $window, serviceConstant, serviceValue, checkService, promptService, httpService, authService, routerService, dataService, localDataService, authInfoService, transformService) {
     var services = {
       serviceConstant: serviceConstant,
       serviceValue: serviceValue,
@@ -943,6 +1174,7 @@ angular.module('cpe-phone.services', ['LocalStorageModule', 'ngMessages', 'toast
       promptService: promptService,
       httpService: httpService,
       authService: authService,
+      routerService: routerService,
       dataService: dataService,
       localDataService: localDataService,
       authInfoService: authInfoService,

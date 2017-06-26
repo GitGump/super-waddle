@@ -1,0 +1,35 @@
+<ion-view hide-nav-bar="true">
+	<ion-header-bar class="bar-positive" align-title="center">
+		<div class="title header-item">{{data.local.str.title}}</div>
+	</ion-header-bar>
+	<ion-content>
+		<div>
+			<span class="list-title" ng-bind="data.local.str.selectDomain"></span>
+			<ion-spinner ng-if="data.local.isFreshing" class="fr positive spinner mr-30 scan-icon"></ion-spinner>
+			<i ng-if="!data.local.isFreshing" ng-click="action.refreshDomainList()" class="scan-icon icon ion-refresh positive fr fz24"></i>
+		</div>
+		<ion-list ng-if="!data.local.isMonitorSuite && data.local.domainList.length > 0">
+			<ion-item ng-click="action.goToDomain(domain)" ng-repeat="domain in data.local.domainList | orderBy: name">
+				<span class="item-label">{{domain.name}}</span>
+				<span class="item-note dark">{{data.local.str.ip + domain.ip}}</span>
+				<p>{{data.local.str.mac + domain.mac}}</p>
+			</ion-item>
+		</ion-list>
+		<ion-list ng-if="data.local.isMonitorSuite && data.local.recorderList.length > 0">
+			<span class="item-message" ng-bind="data.local.str.recorder"></span>
+			<ion-item ng-click="action.goToDomain(domain)" ng-repeat="domain in data.local.recorderList | orderBy: name">
+				<span class="item-label">{{domain.name}}</span>
+				<span class="item-note dark">{{data.local.str.ip + domain.ip}}</span>
+				<p>{{data.local.str.mac + domain.mac}}</p>
+			</ion-item>
+		</ion-list>
+		<ion-list ng-if="data.local.isMonitorSuite && data.local.cameraList.length > 0">
+			<span class="item-message mt20" ng-bind="data.local.str.camera"></span>
+			<ion-item ng-click="action.goToDomain(domain)" ng-repeat="domain in data.local.cameraList | orderBy: name">
+				<span class="item-label">{{domain.name}}</span>
+				<span class="item-note dark">{{data.local.str.ip + domain.ip}}</span>
+				<p>{{data.local.str.mac + domain.mac}}</p>
+			</ion-item>
+		</ion-list>
+	</ion-content>
+</ion-view>

@@ -1,62 +1,49 @@
-<ion-view title="{{cpeService.serviceValue.deviceName}}" hide-nav-bar="true">
+<ion-view hide-nav-bar="true" title="{{cpeService.serviceValue.deviceName}}">
+	<ion-header-bar class="bar-positive" align-title="center">
+		<div class="title header-item">{{data.local.status}}</div>
+	</ion-header-bar>
 	<ion-content class="padding-top" scroll="auto">
-			<h3 class="tac padding-top">{{data.local.status}}</h3>
-			<ion-list ng-if="data.local.isAp" class="show padding-top">
-				<ion-item>
-					<span ng-bind="data.local.str.ipaddr"></span>
-					<span class="item-note" ng-bind="data.local.ipaddr"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.mask"></span>
-					<span class="item-note" ng-bind="data.local.netmask"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.ssid"></span>
-					<span class="item-note" ng-bind="data.local.ssid"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.wirelessMode"></span>
-					<span class="item-note" ng-bind="data.local.wirelessMode"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.bandwidth"></span>
-					<span class="item-note" ng-bind="data.local.bandwidth"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.channel"></span>
-					<span class="item-note" ng-bind="data.local.channel"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.encryption"></span>
-					<span class="item-note" ng-bind="data.local.encryption"></span>
-				</ion-item>
-				<ion-item ng-if="data.local.key != undefined">
-					<span ng-bind="data.local.str.key"></span>
-					<span class="item-note" ng-bind="data.local.key"></span>
-				</ion-item>
-			</ion-list>
-			<ion-list ng-if="!data.local.isAp">
-				<ion-item>
-					<span ng-bind="data.local.str.ipaddr"></span>
-					<span class="item-note" ng-bind="data.local.ipaddr"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.mask"></span>
-					<span class="item-note" ng-bind="data.local.netmask"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.ssidOfAp"></span>
-					<span class="item-note" ng-bind="data.local.ssidOfAp"></span>
-				</ion-item>
-				<ion-item>
-					<span ng-bind="data.local.str.key"></span>
-					<span class="item-note" ng-bind="data.local.key"></span>
-				</ion-item>
-			</ion-list>
-			<button ng-if="!cpeService.serviceValue.isSuccess" ng-click="action.startOver()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.quickSet"></button>
-			<button ng-if="!cpeService.serviceValue.isSuccess" ng-click="action.goToPcWeb()" class="button button-wx button-outline button-positive positive next-step-btn" ng-bind="data.local.str.openPcWeb"></button>
-			<div ng-if="cpeService.serviceValue.isSuccess && data.local.isAp" class="success-tip">
-				<span>{{data.local.str.tipSsid}}<span class="positive">{{data.local.ssid}}</span>{{data.local.str.tipIp}}<span class="positive">{{data.local.ipaddr}}</span></span>
+		<i ng-if="data.local.isSettingSuccess" class="icon ion-ios-checkmark positive tac fz120 show"></i>
+		<div ng-if="data.local.isAp" ng-class="{true: '', false: 'pt20'}[data.local.isSettingSuccess]">
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.ssid"></span>
+				<span class="status-row-content" ng-bind="data.local.ssid"></span>
 			</div>
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.encryption"></span>
+				<span class="status-row-content" ng-bind="data.local.encryption"></span>
+			</div>
+			<div class="row status-row" ng-if="data.local.key != ''">
+				<span class="status-row-title" ng-bind="data.local.str.key"></span>
+				<span class="status-row-content" ng-bind="data.local.key"></span>
+			</div>
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.wirelessMode"></span>
+				<span class="status-row-content" ng-bind="data.local.wirelessMode"></span>
+			</div>
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.bandwidth"></span>
+				<span class="status-row-content" ng-bind="data.local.bandwidth"></span>
+			</div>
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.channel"></span>
+				<span class="status-row-content" ng-bind="data.local.channel"></span>
+			</div>
+		</div>
+		<div ng-if="!data.local.isAp" class="pt40">
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.ssidOfAp"></span>
+				<span class="status-row-content" ng-bind="data.local.ssidOfAp"></span>
+			</div>
+			<div class="row status-row">
+				<span class="status-row-title" ng-bind="data.local.str.key"></span>
+				<span class="status-row-content" ng-bind="data.local.key"></span>
+			</div>
+		</div>
+		<button ng-if="!data.local.isSettingSuccess" ng-click="action.startOver()" class="button button-wx button-positive next-step-btn" ng-bind="data.local.str.quickSet"></button>
+		<button ng-if="!data.local.isSettingSuccess" ng-click="action.goToPcWeb()" class="button button-wx button-outline button-positive positive next-step-btn" ng-bind="data.local.str.openPcWeb"></button>
+		<div ng-if="data.local.isSettingSuccess && data.local.isAp" class="success-tip">
+			<span>{{data.local.str.tipSsid}}<span>{{data.local.ssid}}</span>{{data.local.str.tipIp}}<span>{{data.local.ipaddr}}</span></span>
+		</div>
 	</ion-content>
 </ion-view>

@@ -1,3 +1,4 @@
+'use strict';
 // Ionic cpe-phone App
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
@@ -7,8 +8,8 @@
 // 'cpe-phone.controllers' is found in controllers.js
 angular.module('cpe-phone', ['ionic', 'cpe-phone.controllers', 'cpe-phone.services', 'cpe-phone.directives', 'ui.router'])
 
-.run(['$ionicPlatform',
-  function($ionicPlatform) {
+.run(['$ionicPlatform', '$ionicConfig', 'cpeService',
+  function($ionicPlatform, $ionicConfig, cpeService) {
     $ionicPlatform.ready(function() {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
       // for form inputs)
@@ -20,6 +21,10 @@ angular.module('cpe-phone', ['ionic', 'cpe-phone.controllers', 'cpe-phone.servic
       if (window.StatusBar) {
         // org.apache.cordova.statusbar required
         StatusBar.styleDefault();
+      }
+      if (ionic.Platform.isIOS()) {
+        // Customize back text for ios
+        $ionicConfig.backButton.text(cpeService.serviceConstant.STR.COMMON.BUTTON.BACK);
       }
     });
   }
@@ -39,16 +44,22 @@ angular.module('cpe-phone', ['ionic', 'cpe-phone.controllers', 'cpe-phone.servic
       controller: 'loginCtrl'
     })
 
+    .state('changepwd', {
+      url: '/changepwd',
+      templateUrl: 'pages/changepwd.html',
+      controller: 'changepwdCtrl'
+    })
+
+    .state('domainlist', {
+      url: '/domainlist',
+      templateUrl: 'pages/domainlist.html',
+      controller: 'domainlistCtrl'
+    })
+
     .state('opmode', {
       url: '/opmode',
       templateUrl: 'pages/opmode.html',
       controller: 'opmodeCtrl'
-    })
-
-    .state('lan', {
-      url: '/lan',
-      templateUrl: 'pages/lan.html',
-      controller: 'lanCtrl'
     })
 
     .state('ap', {

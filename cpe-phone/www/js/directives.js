@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('cpe-phone.directives', ['cpe-phone.services'])
 
 .directive('checkLoginUsername', ['checkService',
